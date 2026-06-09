@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 /// @title AIQueryCredits
-/// @notice Prepaid credits for AI queries, backed 1:1 by MON held in this
+/// @notice Prepaid Credits for AI queries, backed 1:1 by MON held in this
 ///         contract. There is no admin and no fees: every credit minted is
 ///         redeemable for exactly the MON that paid for it.
 ///
