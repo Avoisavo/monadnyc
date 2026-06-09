@@ -1107,9 +1107,10 @@ function ExpertAvatar({
   onSelect: (e: Expert) => void;
   positionsRef: React.MutableRefObject<Record<string, { x: number; z: number }>>;
 }) {
-  const behavior = BEHAVIORS[expert.id];
   const section = SECTIONS.find((s) => s.id === expert.sectionId)!;
   const cx = section.position[0];
+  // spawned people aren't in the static layout — let them wander their room
+  const behavior: Behavior = BEHAVIORS[expert.id] ?? { kind: "wandering", x: cx, z: -2, face: 0 };
   // safe stroll area: clear of the bed (west), workstations (north) and sofa (east)
   const bounds = { minX: cx - 1.8, maxX: cx + 2.9, minZ: -6.4, maxZ: 0.8 };
 
@@ -1245,12 +1246,14 @@ function ExpertAvatar({
 /* ================= Playable character ================= */
 
 function Player({
+  experts,
   paused,
   bubbleText,
   positionRef,
   expertPositionsRef,
   onNearChange,
 }: {
+  experts: Expert[];
   paused: boolean;
   bubbleText: string | null;
   positionRef: React.MutableRefObject<Vector3>;
@@ -1329,7 +1332,7 @@ function Player({
     // proximity check for "press E" (experts move, so read live positions)
     let nearest: NearTarget | null = null;
     let best = TALK_RADIUS;
-    for (const expert of EXPERTS) {
+    for (const expert of experts) {
       const p = expertPositionsRef.current[expert.id];
       if (!p) continue;
       const d = Math.hypot(p.x - pos.x, p.z - pos.z);
@@ -1584,6 +1587,7 @@ function Grounds() {
 /* ================= Scene root ================= */
 
 export default function OfficeScene({
+  experts,
   selectedId,
   paused,
   playerBubble,
@@ -1591,6 +1595,7 @@ export default function OfficeScene({
   onSelectExpert,
   onNearChange,
 }: {
+  experts: Expert[];
   selectedId: string | null;
   paused: boolean;
   playerBubble: string | null;
@@ -1644,7 +1649,7 @@ export default function OfficeScene({
       ))}
       <Reception active={nearVault} />
       <Receptionist />
-      {EXPERTS.map((expert, i) => (
+      {experts.map((expert, i) => (
         <ExpertAvatar
           key={expert.id}
           expert={expert}
@@ -1657,6 +1662,7 @@ export default function OfficeScene({
       ))}
 
       <Player
+        experts={experts}
         paused={paused}
         bubbleText={playerBubble}
         positionRef={playerPos}
